@@ -1,0 +1,205 @@
+﻿@model Keys.ViewModels.SalesViewModel
+<script src="~/Scripts/knockout-3.4.2.debug.js"></script>
+<script src="~/Scripts/knockout.validation.js"></script>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+@*<script src="~/Scripts/bootstrap.min.js"></script>*@
+<style>
+    .validationMessage {
+        color: red;
+    }
+    #date {
+        color:red;
+    }
+</style>
+<div class="container">
+    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#myModal" style="margin-top:3%">Add New Sale Record</a>
+    <div>
+        <div class="modal fade" id="myModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <a href="#" class="close" data-dismiss="modal">&times;</a>
+                        <h3 class="modal-title">Sale Details</h3>
+                    </div>
+                    <div class="modal-body">
+                        <form id="myForm">
+                            <div class="form-group">
+                                @Html.Label("Select Customer", new { @class = "col-xs-3" })
+                                <div class="col-xs-9">
+                                    @Html.DropDownListFor(c => c.ProductSold.CustomerId, new SelectList(Model.Customers, "Id", "Name"), "Select Customer", new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.ProductSold.CustomerId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-top:10%">
+                                @Html.Label("Product Name", new { @class = "col-xs-3" })
+                                <div class="col-xs-9">
+                                    @Html.DropDownListFor(c => c.ProductSold.ProductId, new SelectList(Model.Products, "Id", "Name"), "Select Product", new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.ProductSold.ProductId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-top:7%">
+                                @Html.Label("Store Name", new { @class = "col-xs-3" })
+                                <div class="col-xs-9">
+                                    @Html.DropDownListFor(c => c.ProductSold.StoreId, new SelectList(Model.Stores, "Id", "Name"), "Select Store", new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.ProductSold.StoreId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-top:7%;padding-bottom:5%">
+                                @Html.Label("Date", new { @class = "col-xs-3" })
+                                <div class="col-xs-9">
+                                    @Html.EditorFor(model => model.ProductSold.DateSold, new { htmlAttributes = new { @class = "form-control", @onchange = "ClearText()" } })
+                                    @Html.ValidationMessageFor(m => m.ProductSold.DateSold, "", new { @class = "text-danger" })
+                                    <span id="date"></span>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="reset" value="Save" class="btn btn-default" id="btnSubmit" />
+                        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (!Model.SalesList.Any())
+    {
+        <p style="margin: auto;width: 50%;padding: 10px;">There are No Sales Yet!!</p>
+    }
+    else
+    {
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.Label("Customer Name")
+                    </th>
+                    <th>
+                        @Html.Label("Product Name")
+                    </th>
+                    <th>
+                        @Html.Label("Store Name")
+                    </th>
+                    <th>
+                        @Html.Label("Date Sold")
+                    </th>
+                    <th>@Html.Label("Action(Edit)")</th>
+                    <th>@Html.Label("Action(Delete)")</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.SalesList)
+                {
+                    <tr id="row_@item.Id">
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Customer.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Product.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Store.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DateSold)
+                        </td>
+                        <td><a href="#" class="btn btn-warning" onclick="EditSale(@item.Id)"><i class="glyphicon glyphicon-edit"> Edit</i> </a> </td>
+                        <td><a href="#" class="btn btn-danger" onclick="ConfirmDelete(@item.Id)"><i class="glyphicon glyphicon-trash"> Delete</i> </a> </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <div class="modal fade" id="myModalDelete">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h3 class="modal-title">Delete Sale</h3>
+                </div>
+                <div class="modal-body" id="myBodyDiv">
+                    <h4>Are you sure ? You want to delete this. </h4>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                    <a href="#" class="btn btn-success" onclick="DeleteSale()">Confirm</a>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="hiddenSaleId" />
+    </div>
+    <div class="modal fade" id="myModal1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h3 class="modal-title">Edit Sale</h3>
+                </div>
+                <div class="modal-body" id="myModalBodyDiv1">
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                    <input type="reset" value="Save" class="btn btn-default" id="btnSubmitEdit" data-bind="enable:Customer.isValid() && Product.isValid() && Store.isValid() && Date.isValid()" />
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<script src="~/Scripts/knockout-3.4.2.debug.js"></script>
+<script src="~/Scripts/knockout.validation.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#btnSubmit").click(function () {
+            var data = $("#myForm").serialize();
+            if (!$("#myForm").valid()) {
+                return false;
+            }
+            $.ajax({
+                type: "POST",
+                url: "/ProductSolds/Index",
+                data: data,
+                success: function (response) {
+                    
+                    if (response) {
+                        $("#myModal").modal("hide");
+                        window.location.href = "/ProductSolds/Index";
+                    }
+                    else {
+                        $("#date").html("Date should be less than Today's Date!");
+                    }
+                }
+            })
+        })
+    })
+    var ConfirmDelete = function (saleId) {
+        $("#hiddenSaleId").val(saleId);
+        $("#myModalDelete").modal('show');
+    }
+    var DeleteSale = function () {
+        var sId = $("#hiddenSaleId").val();
+        $.ajax({
+            type: "POST",
+            url: "/ProductSolds/DeleteSale",
+            data: { saleId: sId },
+            success: function (result) {
+                $("#myModalDelete").modal("hide");
+                $("#row_" + sId).remove();
+            }
+        })
+    }
+    var ClearText = function () {
+        $("#date").html("");
+    }
+    var EditSale = function (saleId) {
+        var url = "/ProductSolds/EditSale?saleId=" + saleId;
+        $("#myModalBodyDiv1").load(url, function () {
+            $("#myModal1").modal("show");
+        })
+
+    }
+</script>

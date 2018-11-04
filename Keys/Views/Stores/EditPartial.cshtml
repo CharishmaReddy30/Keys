@@ -1,0 +1,75 @@
+﻿@model Keys.ViewModels.StoreViewModel
+    <style>
+        #msg {
+            color: red;
+        }
+    </style>
+<div>
+    <form id="myFormEdit">
+        @Html.HiddenFor(m => m.Store.Id)
+        @Html.LabelFor(model => model.Store.Name)
+        @Html.TextBoxFor(s => s.Store.Name, new { @class = "form-control", @placeholder = "Address", @id = "Name", @data_bind = "value:Name, valueUpdate: 'keyup'", @onkeydown = "ClearText()" })
+        <span id="msg"></span>
+        <div>
+            @Html.LabelFor(model => model.Store.Address, new { @style = "padding-top:2%" })
+            @Html.TextBoxFor(model => model.Store.Address, new { @class = "form-control", @placeholder = "Address", @id = "Address", @data_bind = "value:Address, valueUpdate: 'keyup'" })
+        </div>
+    </form>
+</div>
+
+<script src="~/Scripts/knockout-3.4.2.debug.js"></script>
+<script src="~/Scripts/knockout.validation.js"></script>
+<script>
+    $(document).ready(function () {
+        (function ($) {
+            var contactInfo = {
+                Name: ko.observable($("#Name").val()).extend({
+                    required: {
+                        params: true,
+                        message: "Please Enter The Name"
+                    }, minLength: {
+                        params: 2,
+                        message: "Invalid Name , Please Enter Atleast 2 Letters"
+                    }, maxLength: 50
+                }),
+                Address: ko.observable($("#Address").val()).extend({
+                    required: {
+                        params: true,
+                        message: "Please Enter The Address"
+                    }, minLength: {
+                        params: 2,
+                        message: "Invalid Address , Please Enter Atleast 2 Letters"
+                    }, maxLength: 200
+                })
+            };
+
+
+            ko.applyBindings(contactInfo);
+        }($))
+        $("#btnSubmitEdit").click(function () {
+            var data = $("#myFormEdit").serialize();
+            if ($("#Name").val() == "" || $("#Address").val() == "") {
+                alert("Please Enter The Info");
+            }
+            $.ajax({
+                type: "POST",
+                url: "/Stores/Index",
+                data: data,
+                success: function (response) {
+                    var message = $("#msg");
+                    if (response) {
+                        $("#myModal1").modal("hide");
+                        window.location.href = "/Stores/Index";
+                    }
+                    else {
+                        message.html("Name already exists.Please choose a different Name!");
+                    }
+                }
+            })
+        })
+    })
+    var ClearText = function () {
+        $("#msg").html("");
+    }
+</script>
+

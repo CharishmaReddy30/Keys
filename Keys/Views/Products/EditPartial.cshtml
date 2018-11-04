@@ -1,0 +1,73 @@
+﻿@model Keys.ViewModels.ProductViewModel
+
+<style>
+    .validationMessage {
+        color: red;
+    }
+
+    #msg {
+        color: red;
+    }
+</style>
+<div>
+    <form id="myFormEdit">
+        @Html.HiddenFor(m => m.Product.Id)
+        @Html.LabelFor(model => model.Product.Name)
+        @Html.TextBoxFor(model => model.Product.Name, new { @class = "form-control", @placeholder = "Name", @id = "Name", @data_bind = "value:Name, valueUpdate: 'keyup'", @onkeydown = "ClearText()" })
+        @Html.ValidationMessageFor(m => m.Product.Name, "")
+        <span id="msg"></span>
+        <div>
+            @Html.LabelFor(model => model.Product.Price)
+            @Html.TextBoxFor(model => model.Product.Price, new { @class = "form-control", @placeholder = "Price" })
+            @Html.ValidationMessageFor(m => m.Product.Price, "")
+        </div>
+
+    </form>
+</div>
+
+<script src="~/Scripts/knockout-3.4.2.debug.js"></script>
+<script src="~/Scripts/knockout.validation.js"></script>
+<script>
+    $(document).ready(function () {
+        (function ($) {
+            var contactInfo = {
+                Name: ko.observable($("#Name").val()).extend({
+                    required: {
+                        params: true,
+                        message: "Please Enter The Name"
+                    }, minLength: {
+                        params: 2,
+                        message: "Invalid Name , Please Enter Atleast 2 Letters"
+                    }, maxLength: 7 })
+            };
+
+
+            ko.applyBindings(contactInfo);
+        }($))
+
+
+        $("#btnSubmitEdit").click(function () {
+            var data = $("#myFormEdit").serialize();
+            $.ajax({
+                type: "POST",
+                url: "/Products/Index",
+                data: data,
+                success: function (response) {
+                    var message = $("#msg");
+                    if (response) {
+                        $("#myModal1").modal("hide");
+                        window.location.href = "/Products/Index";
+                    }
+                    else {
+                        message.html("Name already exists.Please choose a different Name!");
+                    }
+                }
+            })
+        })
+    })
+    var ClearText = function () {
+        $("#msg").html("");
+    }
+</script>
+
+
