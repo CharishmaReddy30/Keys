@@ -34,7 +34,7 @@
                             <span id="message"></span>
                             <div>
                                 @Html.LabelFor(model => model.Product.Price)
-                                @Html.TextBoxFor(model => model.Product.Price, new { @class = "form-control", @placeholder = "Price"})
+                                @Html.TextBoxFor(model => model.Product.Price, new { @class = "form-control", @placeholder = "Price", @type = "number" })
                                 @Html.ValidationMessageFor(m => m.Product.Price, "", new { @class = "text-danger" })
                             </div>
                         </form>
