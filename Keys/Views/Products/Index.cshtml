@@ -34,7 +34,7 @@
                             <span id="message"></span>
                             <div>
                                 @Html.LabelFor(model => model.Product.Price)
-                                @Html.TextBoxFor(model => model.Product.Price, new { @class = "form-control", @placeholder = "Price", @type = "number" })
+                                @Html.TextBoxFor(model => model.Product.Price, new { @class = "form-control", @placeholder = "Price", @type = "number", @data_bind = "value:Price, valueUpdate: 'keyup'" })
                                 @Html.ValidationMessageFor(m => m.Product.Price, "", new { @class = "text-danger" })
                             </div>
                         </form>
@@ -133,6 +133,13 @@
                         params: 2,
                         message: "Invalid Name , Please Enter Atleast 2 Letters"
                     }, maxLength: 50
+                })
+                ,
+                Price: ko.observable($("#Price").val()).extend({
+                    required: {
+                        params: true,
+                        message: "Please Enter The Price"
+                    }
                 })
             };
 
